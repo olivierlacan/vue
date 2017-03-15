@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function(){
+      fileSelector = document.querySelector("input");
+      previews = document.querySelector(".previews");
+      overlay = document.querySelector(".overlay");
+      var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+      /**
+        * Conserve aspect ratio of the orignal region. Useful when shrinking/enlarging
+        * images to fit into a certain area.
+        *
+        * @param {Number} srcWidth Source area width
+        * @param {Number} srcHeight Source area height
+        * @param {Number} maxWidth Fittable area maximum available width
+        * @param {Number} maxHeight Fittable area maximum available height
+        * @return {Object} { width, heigth }
+        */
+      function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
+        var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
+
+        return { width: srcWidth * ratio, height: srcHeight * ratio };
+      }
+
+      var maximize = function() {
+        imageSource = event.currentTarget.src;
+        fullWidthImage = new Image();
+        fullWidthImage.src = imageSource;
+        aspectRatio = calculateAspectRatioFit(fullWidthImage.width, fullWidthImage.height, viewportWidth, viewportHeight)
+        fullWidthImage.width, fullWidthImage.height = aspectRatio.width, aspectRatio.height;
+        overlay.appendChild(fullWidthImage);
+        overlay.classList.toggle("hidden");
+        overlay.classList.toggle("visible");
+      };
+
+      var selectRight = function(){
+        selectedElement = document.querySelector(".selected")
+
+        if(selectedElement) {
+          selectedElement.classList.toggle("selected");
+          selectedElement.nextElementSibling.classList.toggle("selected");
+        } else {
+          previews.children[0].classList.toggle("selected");
+        }
+      }
+
+      var unmaximize = function(image = overlay.children[0]) {
+        overlay.removeChild(image);
+        overlay.classList.toggle("hidden");
+        overlay.classList.toggle("visible");
+      };
+
+      document.onkeydown = function(event) {
+        event = event || window.event;
+        var isEscape, isLeft, isRight, isUp, isDown = false;
+
+        if ("key" in event) {
+          isEscape = (event.key == "Escape" || event.key == "Esc");
+          isLeft = (event.key == "ArrowLeft");
+          isRight = (event.key == "ArrowRight");
+          isUp = (event.key == "ArrowUp");
+          isDown = (event.key == "ArrowDown");
+        } else {
+          isEscape = (event.keyCode == 27);
+          isLeft = (event.keyCode == 37);
+          isRight = (event.keyCode == 39);
+          isUp = (event.keyCode == 38);
+          isDown = (event.keyCode == 40);
+        }
+
+        if (isEscape) { unmaximize(); }
+        if (isLeft) { selectLeft(); }
+        if (isRight) { selectRight(); }
+        if (isUp) { selectUp(); }
+        if (isDown) { selectDown(); }
+      };
+
+      function filesSelected(event) {
+        files = event.currentTarget.files;
+        console.log(files.length + " files were selected"); 
+
+        function readAndPreview(file){
+          // Make sure `file.name` matches our extensions criteria
+          if ( /\.(jpe?g|png|gif)$/i.test(file.name) ) {
+
+            var reader = new FileReader();
+
+            reader.addEventListener("load", function () {              
+              var image = new Image();
+              image.title = file.name;
+              image.src = this.result;
+              aspectRatio = calculateAspectRatioFit(image.width, image.height, 150, 150)
+              image.width, image.height = aspectRatio.width, aspectRatio.height;
+              previews.appendChild( image );
+              image.addEventListener("click", maximize);
+            }, false);
+
+            if (file) {
+              reader.readAsDataURL(file);
+            }
+          }
+        }
+
+        if (files) {
+          [].forEach.call(files, readAndPreview);
+        }
+      }
+
+      fileSelector.addEventListener("change", filesSelected);
+    });
+  </script>
+
+  <style type="text/css">
+    .overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-color: black;
+      display: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .visible {
+      display: initial;
+    }
+
+    .selected {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+<input type="file" webkitdirectory directory multiple />
+<div class="previews"></div>
+<div class="overlay hidden"></div>
+</body>
+</html>
