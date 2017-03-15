@@ -10,6 +10,10 @@
       var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
+      var isMaximized = function(){
+        !overlay.classList.contains("hidden");
+      }
+
       /**
         * Conserve aspect ratio of the orignal region. Useful when shrinking/enlarging
         * images to fit into a certain area.
@@ -26,30 +30,45 @@
         return { width: srcWidth * ratio, height: srcHeight * ratio };
       }
 
-      var maximize = function() {
-        imageSource = event.currentTarget.src;
+      var maximize = function(event) {
+        image = event.currentTarget || event;
+        image.classList.toggle("maximized");
+        imageSource = image.src;
         fullWidthImage = new Image();
         fullWidthImage.src = imageSource;
         aspectRatio = calculateAspectRatioFit(fullWidthImage.width, fullWidthImage.height, viewportWidth, viewportHeight)
         fullWidthImage.width, fullWidthImage.height = aspectRatio.width, aspectRatio.height;
         overlay.appendChild(fullWidthImage);
+
         overlay.classList.toggle("hidden");
+        previews.classList.toggle("hidden");
         overlay.classList.toggle("visible");
       };
 
       var selectRight = function(){
-        selectedElement = document.querySelector(".selected")
-
-        if(selectedElement) {
-          selectedElement.classList.toggle("selected");
-          selectedElement.nextElementSibling.classList.toggle("selected");
+        if(isMaximized){ 
+          maximizedImage = document.querySelector(".maximized");
+          imageToMaximize = maximizedImage.nextElementSibling;
+          imageToMaximize.classList.toggle("selected");
+          unmaximize();
+          maximize(imageToMaximize);
         } else {
-          previews.children[0].classList.toggle("selected");
+          selectedElement = document.querySelector(".selected");
+
+          if(selectedElement) {
+            selectedElement.classList.toggle("selected");
+            selectedElement.nextElementSibling.classList.toggle("selected");
+          } else {
+            previews.children[0].classList.toggle("selected");
+          }
         }
       }
 
       var unmaximize = function(image = overlay.children[0]) {
+        maximizedImagePreview = document.querySelector(".maximized");
+        maximizedImagePreview.classList.toggle("maximized");
         overlay.removeChild(image);
+        previews.classList.toggle("hidden");
         overlay.classList.toggle("hidden");
         overlay.classList.toggle("visible");
       };
@@ -64,6 +83,7 @@
           isRight = (event.key == "ArrowRight");
           isUp = (event.key == "ArrowUp");
           isDown = (event.key == "ArrowDown");
+          isEnter = (event.key == "Enter");
         } else {
           isEscape = (event.keyCode == 27);
           isLeft = (event.keyCode == 37);
