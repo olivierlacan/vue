@@ -46,38 +46,34 @@
         overlay.classList.toggle("visible");
       };
 
-      var selectRight = function(){
+      var select = function(direction = "left"){
         if(isMaximized){
           maximizedImage = document.querySelector(".maximized");
-          imageToMaximize = maximizedImage.nextElementSibling;
-          imageToMaximize.classList.toggle("selected");
-          unmaximize();
-          maximize(imageToMaximize);
-        } else {
-          selectedElement = document.querySelector(".selected");
 
-          if(selectedElement) {
-            selectedElement.classList.toggle("selected");
-            selectedElement.nextElementSibling.classList.toggle("selected");
+          if(direction == "left") {
+            imageToMaximize = maximizedImage.previousElementSibling;
           } else {
-            previews.children[0].classList.toggle("selected");
+            imageToMaximize = maximizedImage.nextElementSibling;
           }
-        }
-      }
 
-      var selectLeft = function(){
-        if(isMaximized){
-          maximizedImage = document.querySelector(".maximized");
-          imageToMaximize = maximizedImage.previousElementSibling;
-          imageToMaximize.classList.toggle("selected");
-          unmaximize();
-          maximize(imageToMaximize);
+          if(imageToMaximize) {
+            imageToMaximize.classList.toggle("selected");
+            unmaximize();
+            maximize(imageToMaximize);
+          } else {
+            console.log("No more images to the " + direction + ".")
+          }
         } else {
           selectedElement = document.querySelector(".selected");
 
           if(selectedElement) {
             selectedElement.classList.toggle("selected");
-            selectedElement.previousElementSibling.classList.toggle("selected");
+
+            if(direction == "left") {
+              selectedElement.previousElementSibling.classList.toggle("selected");
+            } else {
+              selectedElement.nextElementSibling.classList.toggle("selected");
+            }
           } else {
             previews.children[0].classList.toggle("selected");
           }
@@ -113,8 +109,8 @@
         }
 
         if (isEscape) { unmaximize(); }
-        if (isLeft) { selectLeft(); }
-        if (isRight) { selectRight(); }
+        if (isLeft) { select("left"); }
+        if (isRight) { select("right"); }
         if (isUp) { selectUp(); }
         if (isDown) { selectDown(); }
       };
