@@ -64,6 +64,25 @@
         }
       }
 
+      var selectLeft = function(){
+        if(isMaximized){
+          maximizedImage = document.querySelector(".maximized");
+          imageToMaximize = maximizedImage.previousElementSibling;
+          imageToMaximize.classList.toggle("selected");
+          unmaximize();
+          maximize(imageToMaximize);
+        } else {
+          selectedElement = document.querySelector(".selected");
+
+          if(selectedElement) {
+            selectedElement.classList.toggle("selected");
+            selectedElement.previousElementSibling.classList.toggle("selected");
+          } else {
+            previews.children[0].classList.toggle("selected");
+          }
+        }
+      }
+
       var unmaximize = function(image = overlay.children[0]) {
         maximizedImagePreview = document.querySelector(".maximized");
         maximizedImagePreview.classList.toggle("maximized");
