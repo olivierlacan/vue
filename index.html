@@ -37,7 +37,8 @@
         fullWidthImage = new Image();
         fullWidthImage.src = imageSource;
         aspectRatio = calculateAspectRatioFit(fullWidthImage.width, fullWidthImage.height, viewportWidth, viewportHeight)
-        fullWidthImage.width, fullWidthImage.height = aspectRatio.width, aspectRatio.height;
+        fullWidthImage.width = aspectRatio.width;
+        fullWidthImage.height = aspectRatio.height;
         overlay.appendChild(fullWidthImage);
 
         overlay.classList.toggle("hidden");
@@ -46,7 +47,7 @@
       };
 
       var selectRight = function(){
-        if(isMaximized){ 
+        if(isMaximized){
           maximizedImage = document.querySelector(".maximized");
           imageToMaximize = maximizedImage.nextElementSibling;
           imageToMaximize.classList.toggle("selected");
@@ -141,7 +142,6 @@
               })
 
               image.src = this.result;
-              image.addEventListener("click", maximize);
             }, false);
 
             if (file) {
