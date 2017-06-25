@@ -120,7 +120,7 @@
 
       function filesSelected(event) {
         files = event.currentTarget.files;
-        console.log(files.length + " files were selected"); 
+        console.log(files.length + " files were selected");
 
         function readAndPreview(file){
           // Make sure `file.name` matches our extensions criteria
@@ -128,13 +128,19 @@
 
             var reader = new FileReader();
 
-            reader.addEventListener("load", function () {              
+            reader.addEventListener("load", function () {
               var image = new Image();
               image.title = file.name;
+              image.addEventListener("load", function(img){
+                aspectRatio = calculateAspectRatioFit(this.width, this.height, 150, 150)
+                image.width = aspectRatio.width;
+                image.height = aspectRatio.height;
+                previews.appendChild( this );
+
+                this.addEventListener("click", maximize);
+              })
+
               image.src = this.result;
-              aspectRatio = calculateAspectRatioFit(image.width, image.height, 150, 150)
-              image.width, image.height = aspectRatio.width, aspectRatio.height;
-              previews.appendChild( image );
               image.addEventListener("click", maximize);
             }, false);
 
