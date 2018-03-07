@@ -2,160 +2,29 @@
 <html>
 <head>
   <title>Vue » a simple web-based directory image viewer</title>
-  <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function(){
-      fileSelector = document.querySelector("input");
-      previews = document.querySelector(".previews");
-      overlay = document.querySelector(".overlay");
-      var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
-      var isMaximized = function(){
-        !overlay.classList.contains("hidden");
-      }
-
-      /**
-        * Conserve aspect ratio of the orignal region. Useful when shrinking/enlarging
-        * images to fit into a certain area.
-        *
-        * @param {Number} srcWidth Source area width
-        * @param {Number} srcHeight Source area height
-        * @param {Number} maxWidth Fittable area maximum available width
-        * @param {Number} maxHeight Fittable area maximum available height
-        * @return {Object} { width, heigth }
-        */
-      function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
-        var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
-
-        return { width: srcWidth * ratio, height: srcHeight * ratio };
-      }
-
-      var maximize = function(event) {
-        image = event.currentTarget || event;
-        image.classList.toggle("maximized");
-        imageSource = image.src;
-        fullWidthImage = new Image();
-        fullWidthImage.src = imageSource;
-        aspectRatio = calculateAspectRatioFit(fullWidthImage.width, fullWidthImage.height, viewportWidth, viewportHeight)
-        fullWidthImage.width = aspectRatio.width;
-        fullWidthImage.height = aspectRatio.height;
-        overlay.appendChild(fullWidthImage);
-
-        overlay.classList.toggle("hidden");
-        previews.classList.toggle("hidden");
-        overlay.classList.toggle("visible");
-      };
-
-      var select = function(direction = "left"){
-        if(isMaximized){
-          maximizedImage = document.querySelector(".maximized");
-
-          if(direction == "left") {
-            imageToMaximize = maximizedImage.previousElementSibling;
-          } else {
-            imageToMaximize = maximizedImage.nextElementSibling;
-          }
-
-          if(imageToMaximize) {
-            imageToMaximize.classList.toggle("selected");
-            unmaximize();
-            maximize(imageToMaximize);
-          } else {
-            console.log("No more images to the " + direction + ".")
-          }
-        } else {
-          selectedElement = document.querySelector(".selected");
-
-          if(selectedElement) {
-            selectedElement.classList.toggle("selected");
-
-            if(direction == "left") {
-              selectedElement.previousElementSibling.classList.toggle("selected");
-            } else {
-              selectedElement.nextElementSibling.classList.toggle("selected");
-            }
-          } else {
-            previews.children[0].classList.toggle("selected");
-          }
-        }
-      }
-
-      var unmaximize = function(image = overlay.children[0]) {
-        maximizedImagePreview = document.querySelector(".maximized");
-        maximizedImagePreview.classList.toggle("maximized");
-        overlay.removeChild(image);
-        previews.classList.toggle("hidden");
-        overlay.classList.toggle("hidden");
-        overlay.classList.toggle("visible");
-      };
-
-      document.onkeydown = function(event) {
-        event = event || window.event;
-        var isEscape, isLeft, isRight, isUp, isDown = false;
-
-        if ("key" in event) {
-          isEscape = (event.key == "Escape" || event.key == "Esc");
-          isLeft = (event.key == "ArrowLeft");
-          isRight = (event.key == "ArrowRight");
-          isUp = (event.key == "ArrowUp");
-          isDown = (event.key == "ArrowDown");
-          isEnter = (event.key == "Enter");
-        } else {
-          isEscape = (event.keyCode == 27);
-          isLeft = (event.keyCode == 37);
-          isRight = (event.keyCode == 39);
-          isUp = (event.keyCode == 38);
-          isDown = (event.keyCode == 40);
-        }
-
-        if (isEscape) { unmaximize(); }
-        if (isLeft) { select("left"); }
-        if (isRight) { select("right"); }
-        if (isUp) { selectUp(); }
-        if (isDown) { selectDown(); }
-      };
-
-      function filesSelected(event) {
-        files = event.currentTarget.files;
-        console.log(files.length + " files were selected");
-
-        function readAndPreview(file){
-          // Make sure `file.name` matches our extensions criteria
-          if ( /\.(jpe?g|png|gif)$/i.test(file.name) ) {
-
-            var reader = new FileReader();
-
-            reader.addEventListener("load", function () {
-              var image = new Image();
-              image.title = file.name;
-              image.addEventListener("load", function(img){
-                aspectRatio = calculateAspectRatioFit(this.width, this.height, 150, 150)
-                image.width = aspectRatio.width;
-                image.height = aspectRatio.height;
-                previews.appendChild( this );
-
-                this.addEventListener("click", maximize);
-              })
-
-              image.src = this.result;
-            }, false);
-
-            if (file) {
-              reader.readAsDataURL(file);
-            }
-          }
-        }
-
-        if (files) {
-          [].forEach.call(files, readAndPreview);
-        }
-      }
-
-      fileSelector.addEventListener("change", filesSelected);
-    });
-  </script>
+  <script src="node_modules/exif-js/exif.js"></script>
+  <script src="index.js"></script>
 
   <style type="text/css">
+    .rotate90 {
+      transform: rotate(90deg);
+    }
+    .rotate180 {
+      transform: rotate(180deg);
+    }
+    .rotate270 {
+      transform: rotate(270deg);
+    }
+    .rotate360 {
+      transform: rotate(360deg);
+    }
+    .rotate-90 {
+      transform: rotate(-90deg);
+    }
+    .rotate-180 {
+      transform: rotate(-180deg);
+    }
+
     .overlay {
       position: absolute;
       top: 0;
