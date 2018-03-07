@@ -1,4 +1,14 @@
+function hasClass( elem, className ) {
+  return elem.className.split( ' ' ).indexOf( className ) > -1;
+}
+
 document.addEventListener("DOMContentLoaded", function(){
+  document.querySelector('.previews').addEventListener('click', function ( event ) {
+    if ( hasClass( event.target, 'thumbnail' ) ) {
+      maximize(event.target)
+    }
+  }, false );
+
   var orientations = [
     { scale: {x: 1, y: 1}, rotate: 0 },
     { scale: {x: 1, y: 1}, rotate: 0 },
@@ -85,8 +95,7 @@ document.addEventListener("DOMContentLoaded", function(){
     return { width: srcWidth * ratio, height: srcHeight * ratio };
   }
 
-  var maximize = function(event) {
-    image = event.currentTarget || event;
+  var maximize = function(image) {
     image.classList.toggle("maximized");
     imageSource = image.src;
     fullWidthImage = new Image();
@@ -185,6 +194,14 @@ document.addEventListener("DOMContentLoaded", function(){
     if (isDown) { selectDown(); }
   };
 
+  function createThumbnail(event) {
+    aspectRatio = calculateAspectRatioFit(this.width, this.height, 150, 150)
+    this.width = aspectRatio.width;
+    this.height = aspectRatio.height;
+    previews.appendChild( this );
+    event.target.removeEventListener("load", createThumbnail);
+  }
+
   function filesSelected(event) {
     files = event.currentTarget.files;
     console.log(files.length + " files were selected");
@@ -198,36 +215,33 @@ document.addEventListener("DOMContentLoaded", function(){
         reader.addEventListener("load", function () {
           var image = new Image();
           image.title = file.name;
+          image.classList.add("thumbnail")
           imageData = this.result;
 
-          var arrayBuffer = base64ToArrayBuffer(imageData);
-          var exif = EXIF.readFromBinaryFile(arrayBuffer);
+          var arrayBufferView = new Uint8Array( imageData );
+          var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } );
+          var urlCreator = window.URL || window.webkitURL;
+          var imageUrl = urlCreator.createObjectURL( blob );
+
+          var exif = EXIF.readFromBinaryFile(imageData);
           var val = exif.Orientation || 0;
           var orientation = orientations[val];
           if (orientation) {
             orientation.exif = val;
+            if(orientation.rotate != 0){
+              image.classList.add("rotate" + orientation.rotate);
+            }
           } else {
             console.log('Could not find EXIF Orientation.');
           }
 
-          image.addEventListener("load", function(img){
-            aspectRatio = calculateAspectRatioFit(this.width, this.height, 150, 150)
-            image.width = aspectRatio.width;
-            image.height = aspectRatio.height;
-            if(orientation.rotate != 0){
-              image.classList.add("rotate" + orientation.rotate);
-            }
+          image.addEventListener("load", createThumbnail);
 
-            previews.appendChild( this );
-
-            this.onclick("click", maximize);
-          })
-
-          image.src = imageData;
+          image.src = imageUrl;
         }, false);
 
         if (file) {
-          reader.readAsDataURL(file);
+          reader.readAsArrayBuffer(file);
         }
       }
     }
