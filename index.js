@@ -95,6 +95,23 @@ document.addEventListener("DOMContentLoaded", function(){
     return { width: srcWidth * ratio, height: srcHeight * ratio };
   }
 
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      var el = document.documentElement
+      var rfs = el.requestFullscreen
+        || el.webkitRequestFullScreen
+        || el.mozRequestFullScreen
+        || el.msRequestFullscreen
+    ;
+
+    rfs.call(el);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
   var maximize = function(image) {
     image.classList.toggle("maximized");
     imageSource = image.src;
@@ -118,11 +135,14 @@ document.addEventListener("DOMContentLoaded", function(){
     aspectRatio = calculateAspectRatioFit(fullWidthImage.width, fullWidthImage.height, viewportWidth, viewportHeight)
     fullWidthImage.width = aspectRatio.width;
     fullWidthImage.height = aspectRatio.height;
+    fullWidthImage.classList.add("fullscreen-image")
     overlay.appendChild(fullWidthImage);
 
     overlay.classList.toggle("hidden");
     previews.classList.toggle("hidden");
     overlay.classList.toggle("visible");
+
+    toggleFullScreen();
   };
 
   var select = function(direction = "left"){
