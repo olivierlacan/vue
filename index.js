@@ -2,60 +2,6 @@ function hasClass( elem, className ) {
   return elem.className.split( ' ' ).indexOf( className ) > -1;
 }
 
-const faceDetector = new window.FaceDetector();
-const overlay = document.querySelector('.overlay');
-
-async function detect() {
-  console.log("detecting...")
-  const img = document.querySelector('img');
-  const faces = await faceDetector.detect(img);
-  drawFaces(faces);
-}
-
-async function drawFaces(faces) {
-  console.log("Drawing faces...")
-  console.log(faces);
-
-  faces.forEach(face => {
-    console.log(face);
-
-    const { width, height, top, left } = face.boundingBox;
-
-    // Create the face
-
-    const faceBox = document.createElement('div');
-    faceBox.classList.add('face');
-    faceBox.style.cssText = `
-      width: ${width}px;
-      height: ${height}px;
-      top: ${top}px;
-      left: ${left}px;
-    `;
-
-    // create the eyes and mouth
-
-    face.landmarks.forEach(landmark => {
-      // create the landmark
-
-      const el = document.createElement('div');
-      el.classList.add('landmark', landmark.type);
-      el.style.cssText =`
-        top: ${landmark.location.y - top}px;
-        left: ${landmark.location.x - left}px;
-      `;
-
-      console.log(el);
-
-      faceBox.appendChild(el);
-    });
-
-    console.log(faceBox);
-
-    overlay.appendChild(faceBox);
-    console.log(faceBox)
-  });
-}
-
 document.addEventListener("DOMContentLoaded", function(){
   document.querySelector('.previews').addEventListener('click', function ( event ) {
     if ( hasClass( event.target, 'thumbnail' ) ) {
@@ -126,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function(){
   fileSelector = document.querySelector("input");
   previews = document.querySelector(".previews");
   overlay = document.querySelector(".overlay");
+  wrap = document.querySelector(".wrap");
   var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
@@ -190,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function(){
     fullWidthImage.width = aspectRatio.width;
     fullWidthImage.height = aspectRatio.height;
     fullWidthImage.classList.add("fullscreen-image")
-    overlay.appendChild(fullWidthImage);
+    wrap.appendChild(fullWidthImage);
 
     overlay.classList.toggle("hidden");
     previews.classList.toggle("hidden");
@@ -233,10 +180,10 @@ document.addEventListener("DOMContentLoaded", function(){
     }
   }
 
-  var unmaximize = function(image = overlay.children[0]) {
+  var unmaximize = function(image = wrap.children[0]) {
     maximizedImagePreview = document.querySelector(".maximized");
     maximizedImagePreview.classList.toggle("maximized");
-    overlay.removeChild(image);
+    wrap.removeChild(image);
     previews.classList.toggle("hidden");
     overlay.classList.toggle("hidden");
     overlay.classList.toggle("visible");
@@ -326,4 +273,58 @@ document.addEventListener("DOMContentLoaded", function(){
   }
 
   fileSelector.addEventListener("change", filesSelected);
+
+  var faceDetector = new window.FaceDetector();
+  var wrap = document.querySelector('.wrap');
+
+  async function detect() {
+    console.log("detecting...")
+    var img = document.querySelector('img');
+    var faces = await faceDetector.detect(img);
+    drawFaces(faces);
+  }
+
+  async function drawFaces(faces) {
+    console.log("Drawing faces...")
+    console.log(faces);
+
+    faces.forEach(face => {
+      console.log(face);
+
+      var { width, height, top, left } = face.boundingBox;
+
+      // Create the face
+
+      var faceBox = document.createElement('div');
+      faceBox.classList.add('face');
+      faceBox.style.cssText = `
+        width: ${width}px;
+        height: ${height}px;
+        top: ${top}px;
+        left: ${left}px;
+      `;
+
+      // create the eyes and mouth
+
+      face.landmarks.forEach(landmark => {
+        // create the landmark
+
+        var el = document.createElement('div');
+        el.classList.add('landmark', landmark.type);
+        el.style.cssText =`
+          top: ${landmark.location.y - top}px;
+          left: ${landmark.location.x - left}px;
+        `;
+
+        console.log(el);
+
+        faceBox.appendChild(el);
+      });
+
+      console.log(faceBox);
+
+      wrap.appendChild(faceBox);
+      console.log(faceBox)
+    });
+  }
 });
