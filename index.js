@@ -2,6 +2,60 @@ function hasClass( elem, className ) {
   return elem.className.split( ' ' ).indexOf( className ) > -1;
 }
 
+const faceDetector = new window.FaceDetector();
+const overlay = document.querySelector('.overlay');
+
+async function detect() {
+  console.log("detecting...")
+  const img = document.querySelector('img');
+  const faces = await faceDetector.detect(img);
+  drawFaces(faces);
+}
+
+async function drawFaces(faces) {
+  console.log("Drawing faces...")
+  console.log(faces);
+
+  faces.forEach(face => {
+    console.log(face);
+
+    const { width, height, top, left } = face.boundingBox;
+
+    // Create the face
+
+    const faceBox = document.createElement('div');
+    faceBox.classList.add('face');
+    faceBox.style.cssText = `
+      width: ${width}px;
+      height: ${height}px;
+      top: ${top}px;
+      left: ${left}px;
+    `;
+
+    // create the eyes and mouth
+
+    face.landmarks.forEach(landmark => {
+      // create the landmark
+
+      const el = document.createElement('div');
+      el.classList.add('landmark', landmark.type);
+      el.style.cssText =`
+        top: ${landmark.location.y - top}px;
+        left: ${landmark.location.x - left}px;
+      `;
+
+      console.log(el);
+
+      faceBox.appendChild(el);
+    });
+
+    console.log(faceBox);
+
+    overlay.appendChild(faceBox);
+    console.log(faceBox)
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function(){
   document.querySelector('.previews').addEventListener('click', function ( event ) {
     if ( hasClass( event.target, 'thumbnail' ) ) {
